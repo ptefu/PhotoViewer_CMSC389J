@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+    <title>Photo Viewer</title>
+	<style>
+		img.double {border-style: double;}
+		body {
+			background-color:#FFF1CC;
+		}
+		h1 {
+			text-decoration: underline;
+		}
+	</style>
+</head>
+
+<body>
+    <h1><Strong>Viewer</Strong></h1>
+    
+    <br>
+    
+    <img src="InitialImage.jpg" alt="initial image" id="image" border="3" class="double">
+    
+    <hr>
+    
+    <form>
+        <p>
+			<strong>Photos' Folder:</strong> <input type="text" name="photosfolder" id="folder"/>
+		</p>
+        
+        <p>
+			<strong>Common Name:</strong> <input type="text" name="commonname" id="commonname"/>
+		</p>
+        
+        <p style="float: left;">
+			<strong>Start Photo Number:</strong> <input type="text" name="startphotonumber" id="startnum"/>
+		</p>
+        
+        <p style="float: left;">
+			<strong>End Photo Number:</strong> <input type="text" name="endphotonumber" id="endnum"/>
+		</p>
+        
+        <br><br><br>
+		<input type="button" id="slideShowBut" value="Slide Show" />
+		<input type="button" id="ranSlideShowBut" value="Random Slide Show" />
+		<input type="button" id="prevBut" value="Previous Slide" />
+		<input type="button" id="nextBut" value="Next Slide" />
+        <br><br>
+		<input type="button" id="autoSlideShowBut" value="Auto Slide Show" />
+		<input type="button" id="autoRanSlideShowBut" value="Auto Random Slide Show" />
+		<input type="button" id="stopAutoSlideShowBut" value="Stop Auto Show" />
+        <br><br>
+        <input type="reset">
+    </form>
+    
+    <script type="text/javascript">
+        "use strict";
+        
+		var slideShowButElement = document.getElementById("slideShowBut");
+		var ranSlideShowButElement = document.getElementById("ranSlideShowBut");
+		var prevButElement = document.getElementById("prevBut");
+		var nextButElement = document.getElementById("nextBut");
+		var htmlImageElement = document.getElementById("image");
+		var autoSlideButElement = document.getElementById("autoSlideShowBut");
+		var ranAutoSlideButElement = document.getElementById("autoRanSlideShowBut");
+		var stopAutoSlideButElement = document.getElementById("stopAutoSlideShowBut");
+		
+		var photoArray = new Array();
+		var currArrayIndex;
+		var folderName;
+		var commonName;
+		var startNum;
+		var endNum;
+		var interval; // interval for auto slide show
+		
+		// set on clicks
+		slideShowButElement.onclick = getArrayPhotoNames;
+		nextButElement.onclick = nextImage;
+		prevButElement.onclick = prevImage;
+		ranSlideShowButElement.onclick = doRandomSlideShow;
+		htmlImageElement.onclick = nextImage;
+		autoSlideButElement.onclick = doAutoSlideShow;
+		ranAutoSlideButElement.onclick = doRandAutoSlideShow;
+		stopAutoSlideButElement.onclick = stopAutoSlideShow;
+		
+		function getArrayPhotoNames() {
+			photoArray = new Array(); //reset photo array
+            folderName = document.getElementById("folder").value;
+			commonName = document.getElementById("commonname").value;
+			startNum = parseInt(document.getElementById("startnum").value);
+			endNum = parseInt(document.getElementById("endnum").value);
+			
+			if (startNum <= endNum && startNum != '' && endNum != '') {
+                for (var i = startNum; i <= endNum; i++) {
+					photoArray.push(folderName + commonName + i + ".jpg");
+				}
+				setImage();
+            } else {
+				alert("Invalid Numbers");
+			}
+        }
+		
+		function doRandomSlideShow() {
+ 			getArrayPhotoNames();
+			if (photoArray.length != 0) {
+                photoArray = randomize(photoArray);
+				setImage();
+            }	
+        }
+		
+		function randomize(dataArray) {
+			var rand;
+			var curr;
+
+			for (var i = 0; i < dataArray.length; i++) {			
+				rand = Math.floor((Math.random() * dataArray.length) + 0);
+				curr = i;
+
+				var valHolder = dataArray[curr];
+				dataArray[curr] = dataArray[rand];
+				dataArray[rand] = valHolder;	
+			}
+			return dataArray;
+        }
+		
+		// set the first image when slideshow set
+		function setImage() {
+            var imageElement = document.getElementById("image");
+			imageElement.setAttribute("src", photoArray[0]);
+			currArrayIndex = 0; // used to keep track of current displayed index in photo array
+        }
+        
+		// tracking image index done relative to indicies in array, not image number.
+		function nextImage() {
+            if (photoArray.length <= 0) {
+                alert("Images Not Set Yet");
+            } else {
+				var imageElement = document.getElementById("image");
+				var imageSrc = imageElement.src;
+
+				if (currArrayIndex == photoArray.length-1) {
+                    imageElement.setAttribute("src", photoArray[0]);
+					currArrayIndex = 0;
+                } else {
+					currArrayIndex++;
+					imageElement.setAttribute("src", photoArray[currArrayIndex]);
+				}
+			}
+        }
+		
+		function prevImage() {
+            if (photoArray.length <= 0) {
+                alert("Images Not Set Yet");
+            } else {
+				var imageElement = document.getElementById("image");
+				var imageSrc = imageElement.src;
+
+				if (currArrayIndex == 0) {
+                    imageElement.setAttribute("src", photoArray[photoArray.length-1]);
+					currArrayIndex = photoArray.length-1;
+                } else {
+					currArrayIndex--;
+					imageElement.setAttribute("src", photoArray[currArrayIndex]);
+				}
+			}
+        }
+		
+		function doAutoSlideShow() {
+			if (!interval) {	// prevent multiple intervals from running
+				getArrayPhotoNames();
+				if (photoArray.length != 0) {
+					interval = setInterval("nextImage()", 900);
+				}
+            } else {
+				alert("Stop Current Slide Show First");
+			}
+        }
+		
+		function doRandAutoSlideShow(args) {
+			if (!interval) {	// prevent multiple intervals from running
+				getArrayPhotoNames();
+				if (photoArray.length != 0) {
+					photoArray = randomize(photoArray);
+					setImage();
+					interval = setInterval("nextImage()", 900);
+				}	
+            } else {
+				alert("Stop Current Slide Show First");
+			}
+        }
+		
+		function stopAutoSlideShow() {
+			clearInterval(interval);
+			interval = null;
+        }
+    </script>
+</body>
+</html>
